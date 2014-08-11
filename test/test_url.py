@@ -3,13 +3,18 @@ test_url.py is the test library correpsonding to the url.py file.
 """
 __author__ = 'Ian Stephenson'
 
+import os
+import re
+import sys
 import unittest
-import urllib.request
-import urllib.parse
+import http.client
+
+sys.path.append(os.pardir)
+import src.url
 
 
 class URLTestSuite(unittest.TestCase):
-    websoc_url = 'http://websoc.reg.uci.edu/perl/WebSoc'
+    response = None
     websoc_form_data = {'Submit':           'Display Web Results',
                         'YearTer':          '2014-92',
                         'ShowComments':     'on',
@@ -32,20 +37,22 @@ class URLTestSuite(unittest.TestCase):
                         'CancelledCourses': 'Exclude',
                         'Bldg':             '',
                         'Room':             ''}
-    request = None
-    respose = None
 
     def setUp(self):
-        urlencoded_websoc_form_data = urllib.parse.urlencode(self.websoc_form_data)
-        binary_websoc_form_data = urlencoded_websoc_form_data.encode('utf-8')
-        self.request = urllib.request.Request(self.websoc_url, data=binary_websoc_form_data, method='POST')
-        self.response = urllib.request.urlopen(self.request)
+        URLTestSuite.response = src.url.posturl(src.url.websoc_url, self.websoc_form_data)
 
     def test_geturl_sends_valid_request(self):
-        self.assertIsNotNone(self.request)
-        self.assertIsNotNone(self.response)
-        r = self.response.read().decode('utf-8')
-        print(r)
+        response_data = URLTestSuite.response.read().decode('utf-8')
+        self.assertIsNotNone(URLTestSuite.response)
+        self.assertIsInstance(URLTestSuite.response, http.client.HTTPResponse)
+        self.assertEqual(URLTestSuite.response.getcode(), 200)
+        self.assertIsNotNone(re.match('<!DOCTYPE\s+html', response_data))  # Make sure it returns HTML
+
+    def test_posturl_retrieves_class_listings(self):
+        response_data = URLTestSuite.response.read().decode('utf-8')
+        print(response_data)
+        self.assertIsNotNone(re.search('<div\s+class="course-list">', response_data))
+
 
 if __name__ == '__main__':
     unittest.main()
