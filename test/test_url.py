@@ -27,7 +27,7 @@ class URLTestSuite(unittest.TestCase):
                         'InstrName':        '',
                         'CourseTitle':      '',
                         'ClassType':        'ALL',
-                        '&Units':           '',
+                        'Units':            '',
                         'Days':             '',
                         'StartTime':        '',
                         'EndTime':          '',
@@ -50,7 +50,6 @@ class URLTestSuite(unittest.TestCase):
 
     def test_posturl_retrieves_class_listings(self):
         response_data = URLTestSuite.response.read().decode('utf-8')
-        print(response_data)
         self.assertIsNotNone(re.search('<div\s+class="course-list">', response_data))
 
 
